@@ -7,31 +7,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspaces Workspace[]
+
+  @@map("users")
+}
+
 model Workspace {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  ownerId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   projects Project[]
 
   @@map("workspaces")
 }
 
 model Project {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
   slug        String
-  apiKey      String    @unique
+  apiKey      String   @unique
   description String?
   domain      String?
-  timezone    String    @default("UTC")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  timezone    String   @default("UTC")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   workspaceId String
 
-  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   events      Event[]
   users       TrackedUser[]
   funnels     Funnel[]
@@ -42,29 +57,29 @@ model Project {
 }
 
 model Event {
-  id         String   @id @default(cuid())
-  projectId  String
-  name       String
-  properties Json     @default("{}")
-  userId     String?
-  sessionId  String?
-  ip         String?
-  country    String?
-  countryCode String?
-  city       String?
-  region     String?
-  device     String?
-  browser    String?
+  id             String   @id @default(cuid())
+  projectId      String
+  name           String
+  properties     Json     @default("{}")
+  userId         String?
+  sessionId      String?
+  ip             String?
+  country        String?
+  countryCode    String?
+  city           String?
+  region         String?
+  device         String?
+  browser        String?
   browserVersion String?
-  os         String?
-  referrer   String?
-  url        String?
-  path       String?
-  revenue    Float?
-  currency   String?
-  timestamp  DateTime @default(now())
+  os             String?
+  referrer       String?
+  url            String?
+  path           String?
+  revenue        Float?
+  currency       String?
+  timestamp      DateTime @default(now())
 
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId, timestamp(sort: Desc)])
   @@index([projectId, name])
@@ -86,7 +101,7 @@ model TrackedUser {
   eventCount Int      @default(0)
   revenue    Float    @default(0)
 
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, externalId])
   @@index([projectId])
@@ -100,24 +115,24 @@ model Funnel {
   steps     Json
   createdAt DateTime @default(now())
 
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("funnels")
 }
 
 model Alert {
-  id         String   @id @default(cuid())
-  projectId  String
-  name       String
-  metric     String
-  condition  String
-  threshold  Float
-  channels   Json     @default("[]")
-  enabled    Boolean  @default(true)
-  lastFired  DateTime?
-  createdAt  DateTime @default(now())
+  id        String    @id @default(cuid())
+  projectId String
+  name      String
+  metric    String
+  condition String
+  threshold Float
+  channels  Json      @default("[]")
+  enabled   Boolean   @default(true)
+  lastFired DateTime?
+  createdAt DateTime  @default(now())
 
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("alerts")
 }

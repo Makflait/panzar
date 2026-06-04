@@ -1,18 +1,10 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
+import { Providers } from '@/components/providers'
 import './globals.css'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  display: 'swap',
-})
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
   title: {
@@ -20,24 +12,7 @@ export const metadata: Metadata = {
     template: '%s · Panzar',
   },
   description:
-    'Self-hosted, open-source analytics platform. Track events, measure revenue, understand your users. Works with any tech stack via webhooks.',
-  keywords: ['analytics', 'open source', 'self-hosted', 'events', 'revenue', 'users', 'webhook'],
-  authors: [{ name: 'Panzar Contributors' }],
-  openGraph: {
-    title: 'Panzar — Open-source analytics',
-    description: 'Track anything. Understand everything. Self-hosted and free forever.',
-    type: 'website',
-    locale: 'en_US',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Panzar — Open-source analytics',
-    description: 'Track anything. Understand everything. Self-hosted and free forever.',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+    'Self-hosted, open-source analytics platform. Track events, measure revenue, understand your users.',
 }
 
 export const viewport: Viewport = {
@@ -48,9 +23,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${mono.variable} dark`} suppressHydrationWarning>
       <body className="font-sans antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

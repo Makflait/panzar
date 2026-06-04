@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 import { nanoid } from 'nanoid'
 
 const db = new PrismaClient()
@@ -25,7 +26,6 @@ const COUNTRIES = [
 
 const BROWSERS = ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera']
 const DEVICES = ['desktop', 'mobile', 'tablet']
-const OS_LIST = ['Windows', 'macOS', 'Linux', 'iOS', 'Android']
 
 function randomFrom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)]
@@ -40,10 +40,18 @@ function daysAgo(n: number) {
 async function main() {
   console.log('Seeding database...')
 
+  const password = await bcrypt.hash('demo1234', 12)
+
+  const user = await db.user.upsert({
+    where: { email: 'demo@panzar.dev' },
+    update: {},
+    create: { name: 'Demo User', email: 'demo@panzar.dev', password },
+  })
+
   const workspace = await db.workspace.upsert({
     where: { slug: 'demo' },
-    update: {},
-    create: { name: 'Demo Workspace', slug: 'demo' },
+    update: { ownerId: user.id },
+    create: { name: 'Demo Workspace', slug: 'demo', ownerId: user.id },
   })
 
   const project = await db.project.upsert({
@@ -58,7 +66,6 @@ async function main() {
     },
   })
 
-  // seed 30 days of events
   const events = []
   for (let day = 29; day >= 0; day--) {
     const baseTime = daysAgo(day)
@@ -71,7 +78,6 @@ async function main() {
       const country = randomFrom(COUNTRIES)
       const name = randomFrom(EVENT_NAMES)
       const isRevenue = name === 'purchase' || name === 'subscription_start' || name === 'upgrade'
-
       const pagePath = name === 'page_view'
         ? randomFrom(['/', '/pricing', '/features', '/docs', '/blog', '/changelog'])
         : null
@@ -87,7 +93,6 @@ async function main() {
         countryCode: country.code,
         browser: randomFrom(BROWSERS),
         device: randomFrom(DEVICES),
-        os: randomFrom(OS_LIST),
         revenue: isRevenue ? parseFloat((Math.random() * 200 + 9.99).toFixed(2)) : null,
         currency: isRevenue ? 'USD' : null,
         timestamp: ts,
@@ -96,9 +101,12 @@ async function main() {
   }
 
   await db.event.createMany({ data: events, skipDuplicates: true })
-  console.log(`Created ${events.length} events for project "${project.name}"`)
+
+  console.log(`Created ${events.length} events`)
+  console.log('\nDemo login:')
+  console.log('  Email:    demo@panzar.dev')
+  console.log('  Password: demo1234')
   console.log('\nAPI Key:', project.apiKey)
-  console.log('Done!')
 }
 
 main()
