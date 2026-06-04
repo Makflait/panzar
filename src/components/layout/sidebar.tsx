@@ -4,21 +4,21 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   BarChart3, Activity, DollarSign, Users, Filter,
-  Radio, Bell, Settings, ChevronDown, Plus,
-  LayoutGrid,
+  Radio, Bell, Settings, ChevronDown, Plus, LayoutGrid,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navItems = [
+const NAV = [
   { href: '', label: 'Overview', icon: LayoutGrid },
   { href: '/events', label: 'Events', icon: Activity },
   { href: '/revenue', label: 'Revenue', icon: DollarSign },
   { href: '/users', label: 'Users', icon: Users },
   { href: '/funnels', label: 'Funnels', icon: Filter },
-  { href: '/realtime', label: 'Realtime', icon: Radio },
+  { href: '/realtime', label: 'Realtime', icon: Radio, badge: 'live' },
 ]
 
-const bottomItems = [
+const BOTTOM_NAV = [
   { href: '/alerts', label: 'Alerts', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
@@ -39,21 +39,25 @@ export function Sidebar({ projectId, projectName }: Props) {
   }
 
   return (
-    <aside className="w-56 shrink-0 h-screen sticky top-0 flex flex-col border-r border-white/8 bg-[#0d0d10]">
+    <aside className="w-56 shrink-0 h-screen sticky top-0 flex flex-col border-r border-zinc-800 bg-[#0d0d10]">
       {/* logo */}
-      <div className="h-14 flex items-center gap-2.5 px-4 border-b border-white/8">
-        <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
+      <Link
+        href="/dashboard"
+        className="h-14 flex items-center gap-2.5 px-4 border-b border-zinc-800 hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center shrink-0">
           <BarChart3 className="w-4 h-4 text-white" />
         </div>
         <span className="font-bold text-white tracking-tight">Panzar</span>
-      </div>
+        <ExternalLink className="w-3 h-3 text-zinc-700 ml-auto" />
+      </Link>
 
       {/* project switcher */}
       <div className="p-3">
-        <button className="w-full flex items-center justify-between gap-2 rounded-lg bg-white/5 hover:bg-white/8 border border-white/8 px-3 py-2 transition-colors group">
+        <button className="w-full flex items-center justify-between gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-3 py-2.5 transition-colors group">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-5 h-5 rounded bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
-              <span className="text-[9px] font-bold text-violet-400 uppercase">
+            <div className="w-5 h-5 rounded-md bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
+              <span className="text-[9px] font-bold text-violet-400 uppercase leading-none">
                 {projectName[0]}
               </span>
             </div>
@@ -63,40 +67,61 @@ export function Sidebar({ projectId, projectName }: Props) {
         </button>
       </div>
 
-      {/* nav */}
-      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto no-scrollbar">
-        {navItems.map((item) => (
-          <Link
-            key={item.label}
-            href={`${base}${item.href}`}
-            className={cn(
-              'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors',
-              isActive(item.href)
-                ? 'bg-violet-500/15 text-violet-300 border border-violet-500/20'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
-            )}
-          >
-            <item.icon className={cn('w-4 h-4 shrink-0', isActive(item.href) ? 'text-violet-400' : '')} />
-            {item.label}
-          </Link>
-        ))}
+      {/* main nav */}
+      <nav className="flex-1 px-3 py-1 space-y-0.5 overflow-y-auto no-scrollbar">
+        {NAV.map((item) => {
+          const active = isActive(item.href)
+          return (
+            <Link
+              key={item.label}
+              href={`${base}${item.href}`}
+              className={cn(
+                'flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all duration-150',
+                active
+                  ? 'bg-violet-500/12 text-violet-300 shadow-[inset_0_0_0_1px_rgba(139,92,246,0.2)]'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60',
+              )}
+            >
+              <item.icon
+                className={cn('w-4 h-4 shrink-0', active ? 'text-violet-400' : 'text-zinc-600')}
+              />
+              <span className="flex-1">{item.label}</span>
+              {item.badge === 'live' && (
+                <span className="flex items-center gap-1 text-[9px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-1.5 py-0.5 leading-none">
+                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                  LIVE
+                </span>
+              )}
+            </Link>
+          )
+        })}
       </nav>
 
-      {/* bottom */}
-      <div className="p-3 border-t border-white/8 space-y-0.5">
-        {bottomItems.map((item) => (
-          <Link
-            key={item.label}
-            href={`${base}${item.href}`}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors"
-          >
-            <item.icon className="w-4 h-4 shrink-0" />
-            {item.label}
-          </Link>
-        ))}
+      {/* bottom nav */}
+      <div className="p-3 border-t border-zinc-800 space-y-0.5">
+        {BOTTOM_NAV.map((item) => {
+          const active = isActive(item.href)
+          return (
+            <Link
+              key={item.label}
+              href={`${base}${item.href}`}
+              className={cn(
+                'flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all duration-150',
+                active
+                  ? 'bg-violet-500/12 text-violet-300 shadow-[inset_0_0_0_1px_rgba(139,92,246,0.2)]'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60',
+              )}
+            >
+              <item.icon
+                className={cn('w-4 h-4 shrink-0', active ? 'text-violet-400' : 'text-zinc-600')}
+              />
+              {item.label}
+            </Link>
+          )
+        })}
         <Link
           href="/dashboard"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-zinc-600 hover:text-zinc-400 hover:bg-zinc-800/60 transition-all"
         >
           <Plus className="w-4 h-4 shrink-0" />
           New project

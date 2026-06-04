@@ -3,34 +3,15 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import {
-  BarChart3, Zap, Globe2, ShieldCheck, Webhook, Users,
-  ArrowRight, Github, Heart, CheckCircle2, Star,
-  TrendingUp, Activity, DollarSign, MousePointerClick,
-  ChevronRight, Code2, Layers, Bell, Download, Sparkles,
-  BarChart2, PieChart, Map, Filter,
+  BarChart3, Zap, Users, ArrowRight, Github, Heart,
+  CheckCircle2, Star, TrendingUp, Activity, DollarSign,
+  Code2, Layers, Bell, Download, Sparkles, Webhook,
+  BarChart2, Map, Filter,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// ─── mini chart used in the hero mockup ───────────────────────────────────────
-const BARS = [30, 55, 42, 78, 65, 88, 72, 95, 83, 100, 91, 97]
+// ─── mini chart for the hero mockup ───────────────────────────────────────────
 const AREA_POINTS = [20, 35, 28, 52, 44, 68, 58, 82, 72, 88, 79, 95]
-
-function MiniBarChart() {
-  return (
-    <div className="flex items-end gap-1 h-full w-full">
-      {BARS.map((h, i) => (
-        <div
-          key={i}
-          className="flex-1 rounded-sm transition-all duration-300"
-          style={{
-            height: `${h}%`,
-            background: `rgba(139, 92, 246, ${0.4 + (h / 100) * 0.5})`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
 
 function MiniAreaChart() {
   const width = 280
@@ -61,120 +42,128 @@ function MiniAreaChart() {
 // ─── dashboard mockup in the hero ─────────────────────────────────────────────
 function DashboardMockup() {
   return (
-    <div className="relative rounded-2xl border border-white/10 bg-[#111115] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
-      {/* window chrome */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/8 bg-[#0d0d10]">
+    <div className="relative rounded-2xl border border-zinc-700/60 bg-[#111115] overflow-hidden shadow-[0_48px_96px_rgba(0,0,0,0.7),0_0_0_1px_rgba(139,92,246,0.08)]">
+      {/* browser chrome */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-[#0d0d10]">
         <div className="flex gap-1.5">
           <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
           <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
           <span className="w-3 h-3 rounded-full bg-[#28c840]" />
         </div>
         <div className="flex-1 mx-4">
-          <div className="mx-auto w-48 h-5 rounded-md bg-white/5 flex items-center justify-center">
-            <span className="text-[10px] text-zinc-500">app.panzar.dev · Dashboard</span>
+          <div className="mx-auto w-52 h-5 rounded-md bg-zinc-800 border border-zinc-700 flex items-center justify-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-violet-500/60" />
+            <span className="text-[10px] text-zinc-500 font-mono">app.panzar.dev</span>
           </div>
         </div>
       </div>
 
       <div className="flex">
         {/* sidebar */}
-        <div className="w-44 border-r border-white/8 bg-[#0d0d10] p-3 space-y-1 shrink-0">
-          <div className="px-2 py-1.5 rounded-lg bg-violet-500/15 border border-violet-500/20 flex items-center gap-2">
-            <BarChart3 className="w-3.5 h-3.5 text-violet-400" />
-            <span className="text-xs text-violet-300">Overview</span>
+        <div className="w-40 border-r border-zinc-800 bg-[#0d0d10] p-3 space-y-0.5 shrink-0">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/15 border border-violet-500/25 mb-2">
+            <BarChart3 className="w-3 h-3 text-violet-400 shrink-0" />
+            <span className="text-[11px] font-medium text-violet-300">Overview</span>
           </div>
-          {['Events', 'Revenue', 'Users', 'Funnels', 'Realtime'].map((item) => (
-            <div key={item} className="px-2 py-1.5 rounded-lg flex items-center gap-2">
-              <span className="w-3.5 h-3.5 rounded-sm bg-zinc-700" />
-              <span className="text-xs text-zinc-500">{item}</span>
+          {[
+            { label: 'Events', icon: Activity },
+            { label: 'Revenue', icon: DollarSign },
+            { label: 'Users', icon: Users },
+            { label: 'Funnels', icon: Filter },
+          ].map(({ label, icon: Icon }) => (
+            <div key={label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg">
+              <Icon className="w-3 h-3 text-zinc-700 shrink-0" />
+              <span className="text-[11px] text-zinc-600">{label}</span>
             </div>
           ))}
-          <div className="mt-4 pt-4 border-t border-white/5">
-            <div className="px-2 py-1.5 rounded-lg flex items-center gap-2">
-              <Bell className="w-3.5 h-3.5 text-zinc-600" />
-              <span className="text-xs text-zinc-500">Alerts</span>
+          <div className="pt-3 mt-3 border-t border-zinc-800 space-y-0.5">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg">
+              <Bell className="w-3 h-3 text-zinc-700 shrink-0" />
+              <span className="text-[11px] text-zinc-600">Alerts</span>
             </div>
           </div>
         </div>
 
-        {/* main */}
-        <div className="flex-1 p-4 space-y-4 overflow-hidden">
-          {/* header */}
+        {/* main content */}
+        <div className="flex-1 p-4 space-y-3.5 overflow-hidden min-w-0">
+          {/* page header */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-zinc-400">My App</p>
-              <h3 className="text-sm font-semibold text-white">Overview</h3>
+              <p className="text-[10px] text-zinc-600 font-medium">MY APP</p>
+              <h3 className="text-sm font-semibold text-white leading-tight">Overview</h3>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-xs bg-white/5 border border-white/10 rounded-md px-2.5 py-1 text-zinc-400">Last 30 days</div>
-              <div className="flex items-center gap-1.5 text-xs bg-emerald-500/10 border border-emerald-500/20 rounded-md px-2 py-1">
+              <div className="text-[10px] bg-zinc-800 border border-zinc-700 rounded-md px-2 py-1 text-zinc-500">
+                Last 30 days
+              </div>
+              <div className="flex items-center gap-1 text-[10px] bg-emerald-500/10 border border-emerald-500/25 rounded-md px-2 py-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-emerald-400">Live</span>
+                <span className="text-emerald-400 font-medium">Live</span>
               </div>
             </div>
           </div>
 
           {/* metric cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             {[
-              { label: 'Total Events', value: '1.24M', delta: '+23%', icon: Activity, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/20' },
-              { label: 'Unique Users', value: '8,432', delta: '+15%', icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20' },
-              { label: 'Revenue', value: '$42.8K', delta: '+8.4%', icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+              { label: 'Events', value: '1.24M', delta: '+23%', icon: Activity, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/25' },
+              { label: 'Users', value: '8,432', delta: '+15%', icon: Users, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/25' },
+              { label: 'Revenue', value: '$42.8K', delta: '+8%', icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/25' },
             ].map((m) => (
-              <div key={m.label} className={cn('rounded-xl border p-3 space-y-2', m.border, m.bg)}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-500">{m.label}</span>
+              <div key={m.label} className={cn('rounded-xl border p-3', m.border, m.bg)}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[9px] text-zinc-500 uppercase tracking-wide font-medium">{m.label}</span>
                   <m.icon className={cn('w-3 h-3', m.color)} />
                 </div>
-                <div className={cn('text-base font-bold', m.color)}>{m.value}</div>
-                <div className="text-[10px] text-emerald-400">{m.delta} vs prev</div>
+                <div className={cn('text-sm font-bold tabular-nums', m.color)}>{m.value}</div>
+                <div className="text-[9px] text-emerald-400 mt-1 font-medium">{m.delta}</div>
               </div>
             ))}
           </div>
 
           {/* area chart */}
-          <div className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-zinc-500">Events over time</span>
-              <span className="text-[10px] text-zinc-600">daily</span>
+              <span className="text-[10px] text-zinc-500 font-medium">Events over time</span>
+              <span className="text-[9px] text-zinc-700">daily · 30d</span>
             </div>
-            <div className="h-14">
+            <div className="h-16">
               <MiniAreaChart />
             </div>
           </div>
 
           {/* bottom row */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
-              <p className="text-[10px] text-zinc-500 mb-2">Top events</p>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+              <p className="text-[9px] text-zinc-600 font-medium uppercase tracking-wide mb-2">Top events</p>
               <div className="space-y-1.5">
                 {[
-                  { name: 'page_view', pct: 42 },
-                  { name: 'button_click', pct: 28 },
-                  { name: 'sign_up', pct: 16 },
+                  { name: 'page_view', pct: 42, color: 'bg-violet-500/60' },
+                  { name: 'button_click', pct: 28, color: 'bg-violet-500/45' },
+                  { name: 'sign_up', pct: 16, color: 'bg-violet-500/30' },
                 ].map((e) => (
                   <div key={e.name} className="flex items-center gap-2">
-                    <span className="text-[9px] text-zinc-500 w-20 truncate">{e.name}</span>
-                    <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-violet-500/60 rounded-full" style={{ width: `${e.pct}%` }} />
+                    <span className="text-[9px] text-zinc-500 w-16 truncate font-mono">{e.name}</span>
+                    <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                      <div className={cn('h-full rounded-full', e.color)} style={{ width: `${e.pct}%` }} />
                     </div>
-                    <span className="text-[9px] text-zinc-600">{e.pct}%</span>
+                    <span className="text-[9px] text-zinc-700 tabular-nums">{e.pct}%</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-white/8 bg-white/[0.02] p-3">
-              <p className="text-[10px] text-zinc-500 mb-2">Top countries</p>
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-3">
+              <p className="text-[9px] text-zinc-600 font-medium uppercase tracking-wide mb-2">Countries</p>
               <div className="space-y-1.5">
                 {[
-                  { flag: '🇺🇸', name: 'United States', pct: 38 },
-                  { flag: '🇬🇧', name: 'United Kingdom', pct: 22 },
-                  { flag: '🇩🇪', name: 'Germany', pct: 14 },
+                  { flag: '🇺🇸', name: 'United States', pct: '38%' },
+                  { flag: '🇬🇧', name: 'UK', pct: '22%' },
+                  { flag: '🇩🇪', name: 'Germany', pct: '14%' },
                 ].map((c) => (
-                  <div key={c.name} className="flex items-center gap-2">
-                    <span className="text-xs">{c.flag}</span>
+                  <div key={c.name} className="flex items-center gap-1.5">
+                    <span className="text-xs leading-none shrink-0">{c.flag}</span>
                     <span className="text-[9px] text-zinc-500 flex-1 truncate">{c.name}</span>
-                    <span className="text-[9px] text-zinc-600">{c.pct}%</span>
+                    <span className="text-[9px] text-zinc-700 tabular-nums shrink-0">{c.pct}</span>
                   </div>
                 ))}
               </div>

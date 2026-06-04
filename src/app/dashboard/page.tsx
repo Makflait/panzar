@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { db } from '@/lib/db'
 import { formatNumber } from '@/lib/utils'
-import { BarChart3, Plus, ArrowRight, Activity, Globe2, DollarSign } from 'lucide-react'
+import { BarChart3, Plus, ArrowRight, Activity, Globe2 } from 'lucide-react'
 
 async function getWorkspaceProjects() {
   try {
@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-[#09090b]">
       {/* header */}
-      <div className="border-b border-white/8 bg-[#0d0d10]">
+      <div className="border-b border-zinc-800 bg-[#0d0d10]">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         </div>
 
         {projects.length === 0 ? (
-          <div className="border border-dashed border-white/10 rounded-2xl p-16 text-center">
+          <div className="border border-dashed border-zinc-800 rounded-2xl p-16 text-center">
             <BarChart3 className="w-10 h-10 text-zinc-700 mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-zinc-400 mb-2">No projects yet</h2>
             <p className="text-zinc-600 text-sm mb-6 max-w-sm mx-auto">
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
               <Link
                 key={project.id}
                 href={`/dashboard/${project.id}`}
-                className="group rounded-2xl border border-white/8 bg-[#111115] hover:bg-[#131318] hover:border-violet-500/30 p-5 transition-all space-y-4"
+                className="group rounded-2xl border border-zinc-800 bg-[#111115] hover:bg-[#131318] hover:border-violet-500/30 p-5 transition-all space-y-4"
               >
                 <div className="flex items-start justify-between">
                   <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
@@ -103,7 +103,7 @@ export default async function DashboardPage() {
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-white/5">
+                <div className="pt-3 border-t border-zinc-900">
                   <div className="font-mono text-[10px] text-zinc-700 truncate">
                     {project.apiKey.slice(0, 24)}…
                   </div>
@@ -111,7 +111,7 @@ export default async function DashboardPage() {
               </Link>
             ))}
 
-            <button className="rounded-2xl border border-dashed border-white/10 hover:border-violet-500/30 bg-transparent hover:bg-violet-500/5 p-5 transition-all flex flex-col items-center justify-center gap-3 text-zinc-600 hover:text-violet-400 min-h-[160px]">
+            <button className="rounded-2xl border border-dashed border-zinc-800 hover:border-violet-500/30 bg-transparent hover:bg-violet-500/5 p-5 transition-all flex flex-col items-center justify-center gap-3 text-zinc-600 hover:text-violet-400 min-h-[160px]">
               <Plus className="w-6 h-6" />
               <span className="text-sm font-medium">New project</span>
             </button>
@@ -120,12 +120,12 @@ export default async function DashboardPage() {
 
         {/* quick start */}
         {projects.length > 0 && (
-          <div className="mt-10 rounded-2xl border border-white/8 bg-[#111115] p-6">
+          <div className="mt-10 rounded-2xl border border-zinc-800 bg-[#111115] p-6">
             <h3 className="font-semibold text-white mb-1">Quick start</h3>
             <p className="text-zinc-500 text-sm mb-4">
               Send your first event with a single HTTP request:
             </p>
-            <div className="rounded-xl bg-[#0d0d10] border border-white/8 p-4 font-mono text-xs text-zinc-400 overflow-x-auto">
+            <div className="rounded-xl bg-[#0d0d10] border border-zinc-800 p-4 font-mono text-xs text-zinc-400 overflow-x-auto">
               <pre>{`curl -X POST ${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/v1/track \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\

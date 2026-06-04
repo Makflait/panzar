@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { db } from '@/lib/db'
-import { headers } from 'next/headers'
 
 const schema = z.object({
   event: z.string().min(1).max(200),
@@ -13,27 +12,29 @@ const schema = z.object({
   currency: z.string().length(3).optional(),
   url: z.string().url().optional(),
   referrer: z.string().optional(),
+  path: z.string().optional(),
 })
 
-// batch support: either a single event or an array
 const batchSchema = z.union([schema, z.array(schema).max(100)])
 
 function extractApiKey(req: NextRequest): string | null {
   const auth = req.headers.get('authorization')
   if (auth?.startsWith('Bearer ')) return auth.slice(7)
-
-  const apiKey = req.headers.get('x-api-key')
-  if (apiKey) return apiKey
-
-  const url = new URL(req.url)
-  return url.searchParams.get('api_key')
+  const key = req.headers.get('x-api-key')
+  if (key) return key
+  return new URL(req.url).searchParams.get('api_key')
 }
 
-function parseUserAgent(ua: string | null) {
-  if (!ua) return {}
-  let browser = 'Other'
-  let os = 'Other'
-  let device = 'desktop'
+function parseUserAgent(ua: string | null): {
+  browser: string | null
+  os: string | null
+  device: string | null
+} {
+  if (!ua) return { browser: null, os: null, device: null }
+
+  let browser: string | null = null
+  let os: string | null = null
+  let device: string | null = 'desktop'
 
   if (/Chrome\//.test(ua) && !/Chromium|Edg/.test(ua)) browser = 'Chrome'
   else if (/Firefox\//.test(ua)) browser = 'Firefox'
@@ -53,15 +54,17 @@ function parseUserAgent(ua: string | null) {
   return { browser, os, device }
 }
 
-async function handleEvents(projectId: string, events: z.infer<typeof schema>[], req: NextRequest) {
-  const headersList = headers()
+async function handleEvents(
+  projectId: string,
+  events: z.infer<typeof schema>[],
+  req: NextRequest,
+) {
   const ua = req.headers.get('user-agent')
   const { browser, os, device } = parseUserAgent(ua)
 
-  // crude IP extraction (behind proxy)
   const ip = (
-    req.headers.get('x-forwarded-for')?.split(',')[0] ||
-    req.headers.get('x-real-ip') ||
+    req.headers.get('x-forwarded-for')?.split(',')[0] ??
+    req.headers.get('x-real-ip') ??
     '0.0.0.0'
   ).trim()
 
@@ -72,10 +75,11 @@ async function handleEvents(projectId: string, events: z.infer<typeof schema>[],
     userId: e.userId ?? null,
     sessionId: e.sessionId ?? null,
     ip,
-    browser: browser ?? null,
-    os: os ?? null,
-    device: device ?? null,
+    browser,
+    os,
+    device,
     url: e.url ?? null,
+    path: e.path ?? (e.url ? new URL(e.url).pathname : null),
     referrer: e.referrer ?? null,
     revenue: e.revenue ?? null,
     currency: e.currency ?? null,
@@ -84,11 +88,10 @@ async function handleEvents(projectId: string, events: z.infer<typeof schema>[],
 
   await db.event.createMany({ data: rows })
 
-  // update/upsert user profiles in background
-  const usersToUpsert = events.filter((e) => e.userId)
-  if (usersToUpsert.length > 0) {
+  const withUser = events.filter((e) => e.userId)
+  if (withUser.length > 0) {
     await Promise.allSettled(
-      usersToUpsert.map((e) =>
+      withUser.map((e) =>
         db.trackedUser.upsert({
           where: { projectId_externalId: { projectId, externalId: e.userId! } },
           create: {
@@ -101,8 +104,8 @@ async function handleEvents(projectId: string, events: z.infer<typeof schema>[],
             eventCount: { increment: 1 },
             revenue: e.revenue ? { increment: e.revenue } : undefined,
           },
-        })
-      )
+        }),
+      ),
     )
   }
 }
@@ -130,24 +133,20 @@ export async function POST(req: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Validation error', details: parsed.error.flatten() },
-        { status: 422 }
+        { status: 422 },
       )
     }
 
     const events = Array.isArray(parsed.data) ? parsed.data : [parsed.data]
     await handleEvents(project.id, events, req)
 
-    return NextResponse.json({
-      ok: true,
-      received: events.length,
-    })
+    return NextResponse.json({ ok: true, received: events.length })
   } catch (err) {
     console.error('[track] error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// allow GET for pixel tracking (e.g. email opens)
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url)
@@ -155,17 +154,21 @@ export async function GET(req: NextRequest) {
     const event = url.searchParams.get('event') ?? 'pixel'
     const userId = url.searchParams.get('uid') ?? undefined
 
-    if (!apiKey) {
-      return new NextResponse(null, { status: 204 })
+    if (apiKey) {
+      const project = await db.project.findUnique({ where: { apiKey } })
+      if (project) {
+        await handleEvents(
+          project.id,
+          [{ event, userId, properties: { source: 'pixel' } }],
+          req,
+        )
+      }
     }
 
-    const project = await db.project.findUnique({ where: { apiKey } })
-    if (project) {
-      await handleEvents(project.id, [{ event, userId, properties: { source: 'pixel' } }], req)
-    }
-
-    // 1x1 transparent GIF
-    const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
+    const gif = Buffer.from(
+      'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      'base64',
+    )
     return new NextResponse(gif, {
       headers: {
         'Content-Type': 'image/gif',

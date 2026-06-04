@@ -72,10 +72,15 @@ async function main() {
       const name = randomFrom(EVENT_NAMES)
       const isRevenue = name === 'purchase' || name === 'subscription_start' || name === 'upgrade'
 
+      const pagePath = name === 'page_view'
+        ? randomFrom(['/', '/pricing', '/features', '/docs', '/blog', '/changelog'])
+        : null
+
       events.push({
         projectId: project.id,
         name,
-        properties: name === 'page_view' ? { path: randomFrom(['/', '/pricing', '/features', '/docs', '/blog']) } : {},
+        properties: {},
+        path: pagePath,
         userId: Math.random() > 0.3 ? `user_${nanoid(8)}` : null,
         sessionId: `sess_${nanoid(8)}`,
         country: country.name,

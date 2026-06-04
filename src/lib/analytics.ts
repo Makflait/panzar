@@ -1,11 +1,25 @@
 import { db } from './db'
-import { subDays, startOfDay, format } from 'date-fns'
+import { subDays, startOfDay, addDays, format, eachDayOfInterval } from 'date-fns'
 
 export type DateRange = '1d' | '7d' | '30d' | '90d'
 
+const RANGE_DAYS: Record<DateRange, number> = { '1d': 1, '7d': 7, '30d': 30, '90d': 90 }
+
 function rangeStart(range: DateRange): Date {
-  const days = { '1d': 1, '7d': 7, '30d': 30, '90d': 90 }
-  return startOfDay(subDays(new Date(), days[range]))
+  return startOfDay(subDays(new Date(), RANGE_DAYS[range]))
+}
+
+// fills every day in range with 0 if no events that day — prevents gaps in charts
+function fillDateGaps(
+  grouped: Record<string, number>,
+  since: Date,
+): { date: string; value: number }[] {
+  const today = startOfDay(new Date())
+  const days = eachDayOfInterval({ start: since, end: today })
+  return days.map((d) => {
+    const key = format(d, 'MMM d')
+    return { date: key, value: grouped[key] ?? 0 }
+  })
 }
 
 export async function getEventTimeseries(projectId: string, range: DateRange = '30d') {
@@ -18,12 +32,12 @@ export async function getEventTimeseries(projectId: string, range: DateRange = '
   })
 
   const grouped: Record<string, number> = {}
-  events.forEach((e) => {
+  for (const e of events) {
     const key = format(e.timestamp, 'MMM d')
     grouped[key] = (grouped[key] ?? 0) + 1
-  })
+  }
 
-  return Object.entries(grouped).map(([date, value]) => ({ date, value }))
+  return fillDateGaps(grouped, since)
 }
 
 export async function getTopEvents(projectId: string, range: DateRange = '30d', limit = 10) {
@@ -78,9 +92,15 @@ export async function getTopPages(projectId: string, range: DateRange = '30d', l
 export async function getTopCountries(projectId: string, range: DateRange = '30d', limit = 10) {
   const since = rangeStart(range)
 
+  // groupBy on nullable columns — filter nulls in where clause first
   const events = await db.event.groupBy({
     by: ['country', 'countryCode'],
-    where: { projectId, timestamp: { gte: since }, country: { not: null } },
+    where: {
+      projectId,
+      timestamp: { gte: since },
+      country: { not: null },
+      countryCode: { not: null },
+    },
     _count: { id: true },
     orderBy: { _count: { id: 'desc' } },
     take: limit,
@@ -89,10 +109,12 @@ export async function getTopCountries(projectId: string, range: DateRange = '30d
   const total = events.reduce((sum, e) => sum + e._count.id, 0)
 
   return events
-    .filter((e) => e.country && e.countryCode)
+    .filter((e): e is typeof e & { country: string; countryCode: string } =>
+      e.country !== null && e.countryCode !== null,
+    )
     .map((e) => ({
-      country: e.country!,
-      countryCode: e.countryCode!,
+      country: e.country,
+      countryCode: e.countryCode,
       count: e._count.id,
       percentage: total > 0 ? Math.round((e._count.id / total) * 100) : 0,
     }))
@@ -219,10 +241,13 @@ export async function getRevenueSeries(projectId: string, range: DateRange = '30
   })
 
   const grouped: Record<string, number> = {}
-  events.forEach((e) => {
+  for (const e of events) {
     const key = format(e.timestamp, 'MMM d')
     grouped[key] = (grouped[key] ?? 0) + (e.revenue ?? 0)
-  })
+  }
 
-  return Object.entries(grouped).map(([date, value]) => ({ date, value: Math.round(value) }))
+  return fillDateGaps(grouped, since).map((d) => ({
+    ...d,
+    value: Math.round(d.value),
+  }))
 }
