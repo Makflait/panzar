@@ -1,11 +1,11 @@
 #!/bin/sh
+set -e
 
-# Start the Next.js server immediately so healthcheck can respond
-node server.js &
-SERVER_PID=$!
+echo "Running database migrations..."
+npx prisma db push --accept-data-loss
 
-# Run migrations in background after a short delay
-(sleep 5 && echo "Running migrations..." && npx prisma db push --accept-data-loss && echo "Migrations done.") &
+echo "Seeding initial data..."
+node scripts/seed-prod.mjs
 
-# Wait for the server process (keeps container alive)
-wait $SERVER_PID
+echo "Starting server..."
+exec node server.js
