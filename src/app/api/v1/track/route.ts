@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 
 const schema = z.object({
@@ -71,7 +72,7 @@ async function handleEvents(
   const rows = events.map((e) => ({
     projectId,
     name: e.event,
-    properties: e.properties ?? {},
+    properties: (e.properties ?? {}) as Prisma.InputJsonValue,
     userId: e.userId ?? null,
     sessionId: e.sessionId ?? null,
     ip,

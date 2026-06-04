@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import { nanoid } from 'nanoid'
 
 const db = new PrismaClient()
@@ -79,7 +79,7 @@ async function main() {
       events.push({
         projectId: project.id,
         name,
-        properties: {},
+        properties: {} as Prisma.InputJsonValue,
         path: pagePath,
         userId: Math.random() > 0.3 ? `user_${nanoid(8)}` : null,
         sessionId: `sess_${nanoid(8)}`,
