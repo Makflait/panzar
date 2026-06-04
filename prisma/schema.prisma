@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects Project[]
+
+  @@map("workspaces")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String
+  apiKey      String    @unique
+  description String?
+  domain      String?
+  timezone    String    @default("UTC")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspaceId String
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  events      Event[]
+  users       TrackedUser[]
+  funnels     Funnel[]
+  alerts      Alert[]
+
+  @@unique([workspaceId, slug])
+  @@map("projects")
+}
+
+model Event {
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String
+  properties Json     @default("{}")
+  userId     String?
+  sessionId  String?
+  ip         String?
+  country    String?
+  countryCode String?
+  city       String?
+  region     String?
+  device     String?
+  browser    String?
+  browserVersion String?
+  os         String?
+  referrer   String?
+  url        String?
+  path       String?
+  revenue    Float?
+  currency   String?
+  timestamp  DateTime @default(now())
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, timestamp(sort: Desc)])
+  @@index([projectId, name])
+  @@index([projectId, userId])
+  @@index([timestamp])
+  @@map("events")
+}
+
+model TrackedUser {
+  id         String   @id @default(cuid())
+  projectId  String
+  externalId String
+  email      String?
+  name       String?
+  avatar     String?
+  traits     Json     @default("{}")
+  firstSeen  DateTime @default(now())
+  lastSeen   DateTime @updatedAt
+  eventCount Int      @default(0)
+  revenue    Float    @default(0)
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, externalId])
+  @@index([projectId])
+  @@map("tracked_users")
+}
+
+model Funnel {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  steps     Json
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("funnels")
+}
+
+model Alert {
+  id         String   @id @default(cuid())
+  projectId  String
+  name       String
+  metric     String
+  condition  String
+  threshold  Float
+  channels   Json     @default("[]")
+  enabled    Boolean  @default(true)
+  lastFired  DateTime?
+  createdAt  DateTime @default(now())
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("alerts")
+}

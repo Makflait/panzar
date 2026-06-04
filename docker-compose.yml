@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: panzar-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: panzar
+      POSTGRES_USER: panzar
+      POSTGRES_PASSWORD: panzar
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: panzar-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+  app:
+    build: .
+    container_name: panzar-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://panzar:panzar@postgres:5432/panzar
+      REDIS_URL: redis://redis:6379
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXTAUTH_SECRET: change-me-in-production
+      NEXTAUTH_URL: http://localhost:3000
+    ports:
+      - '3000:3000'
+    command: sh -c "npx prisma db push && npm start"
+
+volumes:
+  postgres_data:
+  redis_data:
