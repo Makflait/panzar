@@ -31,7 +31,7 @@ const DEVICES = ['desktop', 'mobile', 'tablet']
 
 function countryFlag(code?: string): string {
   if (!code) return '🌍'
-  return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 127397 + c.charCodeAt(0)))
+  return String.fromCodePoint(...Array.from(code.toUpperCase()).map((c) => 127397 + c.charCodeAt(0)))
 }
 
 function eventBadgeClass(name: string): string {

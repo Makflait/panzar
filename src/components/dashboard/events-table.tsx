@@ -21,7 +21,7 @@ type Props = {
 
 function countryFlag(code: string | null): string {
   if (!code) return '🌍'
-  const codePoints = [...code.toUpperCase()].map((c) => 127397 + c.charCodeAt(0))
+  const codePoints = Array.from(code.toUpperCase()).map((c) => 127397 + c.charCodeAt(0))
   return String.fromCodePoint(...codePoints)
 }
 

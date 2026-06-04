@@ -23,7 +23,7 @@ function isDateRange(v: unknown): v is DateRange {
 
 function countryFlag(code: string | null): string {
   if (!code) return '🌍'
-  return String.fromCodePoint(...[...code.toUpperCase()].map((c) => 127397 + c.charCodeAt(0)))
+  return String.fromCodePoint(...Array.from(code.toUpperCase()).map((c) => 127397 + c.charCodeAt(0)))
 }
 
 function TopBar({
