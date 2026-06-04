@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const config = {
   output: 'standalone',
-  serverExternalPackages: ['@prisma/client'],
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client'],
+  },
   images: {
     remotePatterns: [
       {
